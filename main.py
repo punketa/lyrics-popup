@@ -18,10 +18,35 @@ def get_song_lyrics(song):
     title = song["title"]
     artists = song["artists"]
 
+    # =========================
+    # FORMATEAR ARTISTAS
+    # =========================
+
+    artist_list = [
+        artist.strip()
+        for artist in artists.split(",")
+    ]
+
+    if len(artist_list) > 1:
+
+        display_artist = (
+            artist_list[0]
+            + " ft. "
+            + ", ".join(artist_list[1:])
+        )
+
+    else:
+
+        display_artist = artist_list[0]
+
     print("\n🎵 Canción actual")
     print("----------------------------")
-    print(f"Artista: {artists}")
+    print(f"Artista: {display_artist}")
     print(f"Título:  {title}")
+
+    # =========================
+    # BUSCAR EN GENIUS
+    # =========================
 
     genius_song = find_song(
         title,
@@ -29,9 +54,10 @@ def get_song_lyrics(song):
     )
 
     if genius_song is None:
+
         return {
             "title": title,
-            "artist": artists,
+            "artist": display_artist,
             "lyrics": (
                 "No encontramos una coincidencia "
                 "segura.\n\n"
@@ -41,14 +67,19 @@ def get_song_lyrics(song):
             )
         }
 
+    # =========================
+    # OBTENER LETRA
+    # =========================
+
     lyrics = get_lyrics(
         genius_song
     )
 
     if lyrics is None:
+
         return {
             "title": genius_song["title"],
-            "artist": genius_song["primary_artist"]["name"],
+            "artist": display_artist,
             "lyrics": (
                 "⚠️ Esta canción todavía "
                 "no tiene letra.\n\n"
@@ -60,7 +91,7 @@ def get_song_lyrics(song):
 
     return {
         "title": genius_song["title"],
-        "artist": genius_song["primary_artist"]["name"],
+        "artist": display_artist,
         "lyrics": lyrics
     }
 

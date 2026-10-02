@@ -396,16 +396,143 @@ def get_lyrics(song):
 
     for container in lyrics_containers:
 
+        # Los <br> representan saltos de línea reales.
+        # Las demás etiquetas NO deben convertirse
+        # automáticamente en saltos de línea.
+        for br in container.find_all("br"):
+            br.replace_with("\n")
+
+        text = container.get_text(
+            "",
+            strip=False
+        )
+
+        # Normalizar saltos de línea
+        lines = []
+
+        for line in text.splitlines():
+
+            line = re.sub(
+                r"\s+",
+                " ",
+                line
+            ).strip()
+
+            if line:
+                lines.append(line)
+
         lyrics_parts.append(
-            container.get_text(
-                "\n",
-                strip=True
-            )
+            "\n".join(lines)
         )
 
     lyrics = "\n\n".join(
         lyrics_parts
     )
+
+    # -------------------------
+    # LIMPIAR CABECERA
+    # -------------------------
+
+    # "8 Contributors"
+    lyrics = re.sub(
+        r"^\s*\d+\s+Contributors\s*",
+        "",
+        lyrics,
+        flags=re.IGNORECASE
+    )
+
+    # "LEANCOLN REMIX Lyrics"
+    lyrics = re.sub(
+        r"^.*?\s+Lyrics\s*\n",
+        "",
+        lyrics,
+        count=1,
+        flags=re.IGNORECASE
+    )
+
+    # [Letra de "LEANCOLN REMIX"]
+    lyrics = re.sub(
+        r'^\[Letra de "[^"]+"\]\s*',
+        "",
+        lyrics,
+        count=1,
+        flags=re.IGNORECASE
+    )
+
+    # -------------------------
+    # ELIMINAR TRANSLATIONS
+    # -------------------------
+
+    lyrics = re.sub(
+        r"\n*Translations\n*English\n*",
+        "\n",
+        lyrics,
+        flags=re.IGNORECASE
+    )
+
+    # -------------------------
+    # SECCIONES
+    # -------------------------
+
+    def format_section(match):
+
+        section = match.group(1).strip()
+
+        # Separar nombre de sección y artistas
+        #
+        # [Estribillo: cybernene & turrobaby]
+        #              ↓
+        # Estribillo: cybernene & turrobaby
+
+        if ":" in section:
+
+            section_name, artists = section.split(
+                ":",
+                1
+            )
+
+            section_name = section_name.strip()
+            artists = artists.strip()
+
+            return (
+                "\n\n"
+                + section_name.upper()
+                + ": "
+                + artists
+                + "\n\n"
+            )
+
+        return (
+            "\n\n"
+            + section.upper()
+            + "\n\n"
+        )
+
+    lyrics = re.sub(
+        r"\[([^\]]+)\]",
+        format_section,
+        lyrics
+    )
+
+    # -------------------------
+    # LIMPIEZA FINAL
+    # -------------------------
+
+    # Eliminar líneas vacías excesivas
+    lyrics = re.sub(
+        r"\n{3,}",
+        "\n\n",
+        lyrics
+    )
+
+    # Quitar espacios antes de signos
+    lyrics = re.sub(
+        r"\s+([,.;:!?])",
+        r"\1",
+        lyrics
+    )
+
+    lyrics = lyrics.strip()
 
     print("\n✓ Letra encontrada")
     print("============================")

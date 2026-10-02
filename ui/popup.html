@@ -13,10 +13,12 @@
             box-sizing: border-box;
         }
 
+        html,
         body {
             margin: 0;
+            padding: 0;
             background: #181818;
-            color: white;
+            color: #ffffff;
             font-family: Arial, sans-serif;
         }
 
@@ -24,27 +26,59 @@
             padding: 20px;
         }
 
+        /* =========================
+           CABECERA
+           ========================= */
+
         .title {
             font-size: 24px;
             font-weight: bold;
+            line-height: 1.2;
         }
 
         .artist {
-            margin-top: 5px;
+            margin-top: 6px;
             color: #aaaaaa;
             font-size: 16px;
         }
 
         .separator {
             height: 1px;
-            background: #444;
+            background: #444444;
             margin: 20px 0;
         }
+
+        /* =========================
+           LETRA
+           ========================= */
 
         .lyrics {
             font-size: 18px;
             line-height: 1.6;
-            white-space: pre-wrap;
+        }
+
+        .lyrics-line {
+            min-height: 1.6em;
+        }
+
+        /* =========================
+           SECCIONES
+           ========================= */
+
+        .section {
+            margin-top: 28px;
+            margin-bottom: 10px;
+
+            color: #aaaaaa;
+            font-size: 13px;
+            font-weight: bold;
+
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .section:first-child {
+            margin-top: 0;
         }
 
     </style>
@@ -65,11 +99,228 @@
 
         <div class="separator"></div>
 
-        <div class="lyrics">
-            {{LYRICS}}
-        </div>
+        <div
+            class="lyrics"
+            id="lyrics"
+        >{{LYRICS}}</div>
 
     </div>
+
+
+    <script>
+
+        // =========================
+        // PROCESAR LETRA
+        // =========================
+
+        const lyricsElement =
+            document.getElementById("lyrics");
+
+        const title =
+            "{{TITLE}}".trim();
+
+        const rawLyrics =
+            lyricsElement.textContent;
+
+
+        // Dividir la letra por líneas
+        let lines =
+            rawLyrics.split(/\r?\n/);
+
+
+        // =========================
+        // UNIR ETIQUETAS ROTAS
+        // =========================
+
+        const processedLines = [];
+
+        let collectingSection = false;
+        let sectionText = "";
+
+
+        for (let line of lines) {
+
+            line = line.trim();
+
+
+            // Si estamos dentro de una etiqueta
+            if (collectingSection) {
+
+                sectionText += " " + line;
+
+
+                // La etiqueta termina cuando aparece ]
+                if (line.includes("]")) {
+
+                    processedLines.push(
+                        sectionText
+                    );
+
+                    sectionText = "";
+                    collectingSection = false;
+                }
+
+                continue;
+            }
+
+
+            // Comienza una etiqueta pero no termina
+            // en la misma línea
+            if (
+                line.startsWith("[") &&
+                !line.includes("]")
+            ) {
+
+                collectingSection = true;
+                sectionText = line;
+
+                continue;
+            }
+
+
+            processedLines.push(line);
+        }
+
+
+        // =========================
+        // LIMPIAR HTML
+        // =========================
+
+        lyricsElement.innerHTML = "";
+
+
+        for (let line of processedLines) {
+
+            line = line.trim();
+
+
+            // -------------------------
+            // LÍNEAS VACÍAS
+            // -------------------------
+
+            if (line === "") {
+
+                const spacer =
+                    document.createElement("div");
+
+                spacer.style.height = "0.7em";
+
+                lyricsElement.appendChild(
+                    spacer
+                );
+
+                continue;
+            }
+
+
+            // -------------------------
+            // CONTRIBUTORS
+            // -------------------------
+
+            if (
+                /^\d+\s+Contributors?$/i.test(line)
+            ) {
+                continue;
+            }
+
+
+            // -------------------------
+            // "TITLE LYRICS"
+            // -------------------------
+
+            if (
+                line.toLowerCase() ===
+                `${title} lyrics`.toLowerCase()
+            ) {
+                continue;
+            }
+
+
+            // -------------------------
+            // [LETRA DE "..."]
+            // [LYRICS]
+            // -------------------------
+
+            if (
+                /^\[(?:letra de|lyrics)\b.*\]$/i.test(line)
+            ) {
+                continue;
+            }
+
+
+            // -------------------------
+            // SECCIONES
+            // -------------------------
+
+            if (
+                line.startsWith("[") &&
+                line.endsWith("]")
+            ) {
+
+                let sectionName =
+                    line
+                        .slice(1, -1)
+                        .trim();
+
+
+                // -------------------------
+                // QUITAR INFORMACIÓN EXTRA
+                // -------------------------
+
+                // Ejemplo:
+                //
+                // Estribillo: cybernene & turrobaby
+                //
+                // se convierte en:
+                //
+                // Estribillo
+
+                if (sectionName.includes(":")) {
+
+                    sectionName =
+                        sectionName
+                            .split(":")[0]
+                            .trim();
+                }
+
+
+                const section =
+                    document.createElement("div");
+
+                section.className =
+                    "section";
+
+                section.textContent =
+                    sectionName;
+
+
+                lyricsElement.appendChild(
+                    section
+                );
+
+                continue;
+            }
+
+
+            // -------------------------
+            // LÍNEA NORMAL
+            // -------------------------
+
+            const lyricLine =
+                document.createElement("div");
+
+            lyricLine.className =
+                "lyrics-line";
+
+            lyricLine.textContent =
+                line;
+
+            lyricsElement.appendChild(
+                lyricLine
+            );
+        }
+
+    </script>
 
 </body>
 
