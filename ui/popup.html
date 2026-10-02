@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Lyrics Popup</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #181818;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .artist {
+            margin-top: 5px;
+            color: #aaaaaa;
+            font-size: 16px;
+        }
+
+        .separator {
+            height: 1px;
+            background: #444;
+            margin: 20px 0;
+        }
+
+        .lyrics {
+            font-size: 18px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="title">
+            {{TITLE}}
+        </div>
+
+        <div class="artist">
+            {{ARTIST}}
+        </div>
+
+        <div class="separator"></div>
+
+        <div class="lyrics">
+            {{LYRICS}}
+        </div>
+
+    </div>
+
+</body>
+
+</html>
