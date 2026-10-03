@@ -1,0 +1,8 @@
+- Improve lyrics formatting
+- Handle more Genius lyric formats correctly
+- Improve song matching
+- Make the popup look better
+- Add settings for the popup
+- Add support for pausing/hiding the popup
+- Handle songs without lyrics better
+- Improve error handling
